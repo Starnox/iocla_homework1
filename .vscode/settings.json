@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "tseries.h": "c",
+        "typeinfo": "c",
+        "tseason.h": "c",
+        "tepisode.h": "c"
+    }
+}
