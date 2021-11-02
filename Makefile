@@ -1,5 +1,5 @@
 build:
-	gcc tema1.c -g -o tema
+	gcc -Wall -Wextra tema1.c -g -o tema1
 
 clean:
 	rm tema
