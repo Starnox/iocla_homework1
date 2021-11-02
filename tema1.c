@@ -120,6 +120,16 @@ void freeDirList(Dir **dirList)
 	}
 }
 
+void recursivePwd(Dir *target, char *s)
+{
+	if(target == NULL)
+		return;
+
+	recursivePwd(target->parent, s);
+	strcat(s, "/");
+	strcat(s, target->name);
+}
+
 
 void touch (Dir* parent, char* name)
 {
@@ -302,7 +312,9 @@ void cd(Dir** target, char *name)
 
 char *pwd (Dir* target)
 {
-
+	char *res = (char *) malloc(sizeof(char) * MAX_INPUT_LINE_SIZE);
+	recursivePwd(target, res);
+	return res;
 }
 
 void stop (Dir* target)
@@ -317,16 +329,16 @@ void tree (Dir* target, int level)
 
 	char *leadingSpaces = (char *) malloc(sizeof(char) * level * 4 + 1);
 
-	for(int i = 0; i < level; ++i)
+	for(int i = 0; i < level * 4; ++i)
 	{
-		strcat(leadingSpaces, "\t");
+		strcat(leadingSpaces, " ");
 	}
 
-	Dir *dirIterator = target;
+	Dir *dirIterator = target->head_children_dirs;
 	while(dirIterator != NULL)
 	{
 		printf("%s%s\n", leadingSpaces,  dirIterator->name);
-		tree(dirIterator->head_children_dirs, level+1);
+		tree(dirIterator, level+1);
 		dirIterator = dirIterator->next;
 	}
 	File *fileIterator = target->head_children_files;
@@ -341,16 +353,127 @@ void tree (Dir* target, int level)
 	
 }
 
-void mv(Dir* parent, char *oldname, char *newname) {}
+void mvHelperDir(Dir* parent, char *oldname, char *newname)
+{
+	Dir* dirIterator = parent->head_children_dirs;
+	if(dirIterator == NULL)
+		return;
+
+	Dir* oldDir;
+	if(strcmp(dirIterator->name, oldname) == 0)
+	{
+		oldDir = dirIterator;
+		parent->head_children_dirs = parent->head_children_dirs->next;
+	}
+
+	while(dirIterator->next != NULL)
+	{
+		if(strcmp(dirIterator->next->name, oldname) == 0)
+		{
+			oldDir = dirIterator->next;
+			dirIterator->next = dirIterator->next->next;
+		}
+		dirIterator = dirIterator->next;
+	}
+
+	strcpy(oldDir->name, newname);
+	oldDir->next = NULL;
+	if(parent->head_children_dirs == NULL)
+		parent->head_children_dirs = oldDir;
+	else
+		dirIterator->next = oldDir;
+}
+
+void mvHelperFile(Dir* parent, char *oldname, char *newname)
+{
+	File* fileIterator = parent->head_children_files;
+	if(fileIterator == NULL)
+		return;
+
+	File* oldFile;
+
+	// initial check
+	if(strcmp(fileIterator->name, oldname) == 0)
+	{
+		oldFile = fileIterator;
+		parent->head_children_files = parent->head_children_files->next;
+
+	}
+
+	// look in all of the list and go to the end
+	while(fileIterator->next != NULL)
+	{
+		if(strcmp(fileIterator->next->name, oldname) == 0)
+		{
+			oldFile = fileIterator->next;
+			fileIterator->next = fileIterator->next->next;
+		}
+		fileIterator = fileIterator->next;
+	}
+	// go to the end of the list
+	strcpy(oldFile->name, newname);
+	oldFile->next = NULL;
+	if(parent->head_children_files == NULL)
+		parent->head_children_files = oldFile;
+	else
+		fileIterator->next = oldFile;
+}
+
+
+void mv(Dir* parent, char *oldname, char *newname)
+{
+	int alreadyExistsFile = 0, alreadyExistsDir = 0, foundFile = 0, foundDir = 0;
+	// check conditions
+	Dir *dirIterator = parent->head_children_dirs;
+	while(dirIterator != NULL)
+	{
+		// if we find a directory with that name
+		if(strcmp(dirIterator->name, oldname) == 0)
+		{
+			foundDir = 1;
+		}
+		if(strcmp(dirIterator->name, newname) == 0)
+		{
+			alreadyExistsDir = 1;
+			break;
+		}
+		dirIterator = dirIterator->next;
+	}
+
+	// look for file with that name
+	File *fileIterator = parent->head_children_files;
+	while(fileIterator != NULL)
+	{
+		if(strcmp(fileIterator->name, oldname) == 0)
+		{
+			foundFile = 1;
+		}
+		if(strcmp(fileIterator->name, newname) == 0)
+		{
+			alreadyExistsFile = 1;
+			break;
+		}
+		fileIterator = fileIterator->next;
+	}	
+
+	if(alreadyExistsDir || alreadyExistsFile)
+		printf("File/Director already exists\n");
+	else if(!foundFile && !foundDir)
+		printf("File/Director not found\n");
+	else if(foundDir == 1 && alreadyExistsDir == 0)
+		mvHelperDir(parent, oldname, newname);
+	else
+		mvHelperFile(parent, oldname, newname);
+
+}
 
 int main () {
 	// variables initialisation and allocation
 	Dir *root = initialiseDir("home", NULL);
 	Dir *currentDirectory = root;
 
-
-
 	char *name = (char *) malloc(sizeof(char) * MAX_INPUT_LINE_SIZE);
+	char *name2 = (char *) malloc(sizeof(char) * MAX_INPUT_LINE_SIZE);
 	// allocate memory for the command variable
 	char *command = (char *) malloc(sizeof(char) * MAX_INPUT_LINE_SIZE);
 	do
@@ -389,9 +512,20 @@ int main () {
 		}
 		else if(strcmp(command, "tree") == 0)
 		{
-			tree(currentDirectory->head_children_dirs, 0);
+			tree(currentDirectory, 0);
+			printf("\n");
 		}
-		
+		else if(strcmp(command, "pwd") == 0)
+		{
+			char* res = pwd(currentDirectory);
+			printf("%s\n", res);
+			free(res);
+		}
+		else if(strcmp(command, "mv") == 0)
+		{
+			scanf("%s %s", name, name2);
+			mv(currentDirectory, name, name2);
+		}
 		/*
 		Summary:
 			Reads from stdin a string and breaks it down into command and in
@@ -401,6 +535,7 @@ int main () {
 
 
 	free(name);
+	free(name2);
 	free(command);
 	freeDir(&root);
 	return 0;
