@@ -197,13 +197,6 @@ void mkdir (Dir* parent, char* name)
 void ls (Dir* parent)
 {
 
-	// print the file list
-	File *fileIterator = parent->head_children_files;
-	while(fileIterator != NULL)
-	{
-		printf("%s\n", fileIterator->name);
-		fileIterator = fileIterator->next;
-	}
 	// print the directory list
 	Dir *dirIterator = parent->head_children_dirs;
 	while(dirIterator != NULL)
@@ -211,6 +204,14 @@ void ls (Dir* parent)
 		printf("%s\n", dirIterator->name);
 		dirIterator = dirIterator->next;
 	}
+	// print the file list
+	File *fileIterator = parent->head_children_files;
+	while(fileIterator != NULL)
+	{
+		printf("%s\n", fileIterator->name);
+		fileIterator = fileIterator->next;
+	}
+	
 
 	
 }
@@ -222,6 +223,7 @@ void rm (Dir* parent, char* name)
 	File* fileIterator = parent->head_children_files;
 	if(fileIterator == NULL)
 	{
+		printf("Could not find the file\n");
 		return;
 	}
 
@@ -253,6 +255,7 @@ void rmdir (Dir* parent, char* name)
 	Dir* dirIterator = parent->head_children_dirs;
 	if(dirIterator == NULL)
 	{
+		printf("Could not find the dir\n");
 		return;
 	}
 	if(strcmp(dirIterator->name, name) == 0)
@@ -317,10 +320,6 @@ char *pwd (Dir* target)
 	return res;
 }
 
-void stop (Dir* target)
-{
-	return;
-}
 
 void tree (Dir* target, int level)
 {
@@ -467,6 +466,12 @@ void mv(Dir* parent, char *oldname, char *newname)
 
 }
 
+void stop(Dir *target)
+{
+	freeDir(&target);
+	exit(0);
+}
+
 int main () {
 	// variables initialisation and allocation
 	Dir *root = initialiseDir("home", NULL);
@@ -474,6 +479,7 @@ int main () {
 
 	char *name = (char *) malloc(sizeof(char) * MAX_INPUT_LINE_SIZE);
 	char *name2 = (char *) malloc(sizeof(char) * MAX_INPUT_LINE_SIZE);
+
 	// allocate memory for the command variable
 	char *command = (char *) malloc(sizeof(char) * MAX_INPUT_LINE_SIZE);
 	do
@@ -526,17 +532,14 @@ int main () {
 			scanf("%s %s", name, name2);
 			mv(currentDirectory, name, name2);
 		}
-		/*
-		Summary:
-			Reads from stdin a string and breaks it down into command and in
-			case it needs into a name.
-		*/
-	} while (strcmp(command, "stop") != 0);
+		else if(strcmp(command, "stop") == 0)
+		{
+			free(name);
+			free(name2);
+			free(command);
+			stop(root);
+		}
+	} while (1);
 
-
-	free(name);
-	free(name2);
-	free(command);
-	freeDir(&root);
 	return 0;
 }
