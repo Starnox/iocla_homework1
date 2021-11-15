@@ -409,7 +409,8 @@ void mvHelperFile(Dir* parent, char *oldname, char *newname)
 		}
 		fileIterator = fileIterator->next;
 	}
-	// go to the end of the list
+	
+	
 	strcpy(oldFile->name, newname);
 	oldFile->next = NULL;
 	if(parent->head_children_files == NULL)

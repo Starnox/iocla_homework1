@@ -1,0 +1,54 @@
+#### Tema 1 Iocla
+## Elev: Mihailescu Eduard-Florin
+## Grupa: 322CB
+
+### Descriere generala
+Acest cod are ca scop rezolvarea temei 1 propusa in cadrul cursului de IOCLA
+din anul II, seria CB de la Facultatea de Automatica si Calculatoare. Specific faptul ca tema a obtinut un punctaj maxim
+la rularea locala (120/120)
+
+### Structura
+Codul este scris exclusiv in fisierul tema1.c avand in vedere fisierul schelet primit.
+Citirea comenzilor este realizata in main de unde vor fi apelate functiile specifice 
+fiecarei comenzi
+
+Astfel se regasesc urmatoarele functii:
+* `initialiseFile()` -> alocare memorie si initializare pentru un fisier
+* `freeFile()` -> dezalocare memorie pentru un fisier
+* `freeFileList()` -> se itereaza prin o lista de fisiere si se apeleaza functia `freefile()`
+* `initialiseDir()` -> alocare memorie si initializare pentru un director
+* `freeDir()` -> dezalocare memorie pentru un director
+* `freeDirList()` -> se itereaza prin o lista de directoare si se apeleaza functia `freeDir()`
+* `recursivePwd()` -> se itereaza recursiv prin lista de directoare si construieste
+calea in ordine inversa
+* `touch()` -> se verifica daca lista de fisiere este nula sau daca fisierul
+este continut deja in lisa -> in caz contrar se creeaza un fisier nou cu
+`initialiseFile()` si este adaugat la finalul listei
+* `mkdir()` -> acelasi procedeu ca la `touch()` insa pentru directoare
+* `ls()` -> se itereaza atat prin lista de fisiere cat si prin lista de directoare
+a directorului primit ca parametru si se afiseaza numele
+* `rm()` -> se verifica daca fisierul exista in lista, iar in caz afirmativ se 
+trateaza doua cazuri -> fisierul este primul in lista si astfel trebuie modificat
+inceputul listei sau in caz contrar trebuie sters in nod din lista si trebuiesc
+refacate legaturile
+* `rmdir()` -> acelasi procedeu ca la `rm()` insa pentru directoare
+* `cd()` -> se trateaza cazul de "cd .." separat dupa care se incearca gasirea
+directorul si actualizarea directorului curent
+* `pwd()` -> se foloseste de functia auxiliara `recursivePwd()` definita anterior
+* `stop()` -> dezaloca memoria pentru intrega ierarhie de fisiere si directoare
+si opreste executia programului prin folosirea functiei `exit()`
+* `tree()` -> functie recursiva ce trece prin toate directoarele ierarhiei si
+in functie de nivelul la care se afla in stackul de recursivitate afiseaza
+numarul de spatii corespunator
+* `moveHelperDir()` -> functie helper pentru a muta directoare in cazul in care
+functia 'mv' gaseste un director cu numele primit ca parametru -> se adauga
+la finalul listei de directoare
+* `moveHelperFile()` -> functie helper pentru a muta fisiere in cazul in care
+functia 'mv' gaseste un fisier cu numele primit ca parametru -> se adauga
+la finalul listei de fisiere
+* `mv()` -> se verfica existenta fisierului/directorului primit sub forma de string
+si se apeleaza functiile helper in mod corespunzator sau se afiseaza mesaje
+de eroare
+* `main()` -> citeste pe rand fiecare linie din input si in functie de primul
+keyword din linie apeleaza functiile prezentate anterior.
+
